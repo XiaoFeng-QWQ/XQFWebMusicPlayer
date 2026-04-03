@@ -1,0 +1,607 @@
+* {
+    user-select: none;
+    box-sizing: border-box;
+}
+
+:root {
+    --bento-gap: 20px;
+    --glass-bg: rgba(var(--mdui-color-surface-container-low), 0.7);
+}
+
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(var(--mdui-color-primary), 0.2);
+    border-radius: 10px;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', 'Roboto', sans-serif;
+    color: rgb(var(--mdui-color-on-surface));
+    margin: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: -60%;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    transform: rotateX(58deg) translateY(0);
+    transform-origin: center;
+    animation: subtleFlow 18s linear infinite;
+    pointer-events: none;
+    will-change: transform;
+}
+
+.depth-layer {
+    position: fixed;
+    inset: -10%;
+    z-index: 0;
+    background: linear-gradient(120deg, rgba(var(--mdui-color-primary), 0.08), transparent 40%), linear-gradient(-120deg, rgba(var(--mdui-color-secondary), 0.06), transparent 50%);
+    transform: rotate(-3deg) scale(1.1);
+    filter: blur(60px);
+}
+
+#app-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.bento-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto;
+    gap: var(--bento-gap);
+    width: 90%;
+    max-width: 1200px;
+}
+
+.bento-item {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(var(--mdui-color-outline), 0.1);
+    border-radius: 32px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    transition: border 0.3s ease;
+    min-width: 0;
+}
+
+.bento-item:hover {
+    border-color: rgb(var(--mdui-color-primary));
+}
+
+.item-full {
+    grid-column: span 4;
+}
+
+.item-half {
+    grid-column: span 2;
+}
+
+.player-info-card {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.cover-img-large {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+}
+
+.spin-anim {
+    animation: spin 20s linear infinite;
+}
+
+.spin-anim.paused {
+    animation-play-state: paused;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.song-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.song-artist {
+    font-size: 1.1rem;
+    opacity: 0.7;
+    margin: 8px 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lyrics-card {
+    justify-content: center;
+}
+
+.lyrics-container {
+    height: 380px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
+    scrollbar-width: none;
+}
+
+.lyrics-container::-webkit-scrollbar {
+    display: none;
+}
+
+.lyrics-list {
+    list-style: none;
+    padding: 180px 0;
+    margin: 0;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+    /* 确保 padding 不会撑破容器 */
+}
+
+.lyric-line {
+    list-style: none;
+    /* 把基础字号调大，相当于直接按高亮态的大小来排版 */
+    font-size: 1.4rem;
+    /* 用 padding 留出左右“防撞缓冲区” */
+    margin: 24px auto;
+    padding: 0 12%;
+    width: 100%;
+    box-sizing: border-box;
+    white-space: normal;
+    word-break: break-word;
+    word-wrap: break-word;
+    line-height: 1.6;
+    color: rgb(var(--mdui-color-on-surface));
+    opacity: 0.15;
+    filter: blur(3px);
+    /* 不播放的歌词往“小”缩，而不是让高亮歌词往“大”放 */
+    transform: scale(0.8);
+    transition: all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+    cursor: pointer;
+    transform-origin: center;
+}
+
+.lyric-line:hover {
+    opacity: 0.7;
+    filter: blur(0px);
+    transform: scale(0.95);
+}
+
+.lyric-line.active {
+    opacity: 1;
+    filter: blur(0px);
+    transform: scale(1);
+    font-weight: 800;
+    color: rgb(var(--mdui-color-primary));
+}
+
+.lyric-line.near {
+    opacity: 0.5;
+    filter: blur(1px);
+    transform: scale(0.9);
+    font-weight: 600;
+}
+
+.lyric-line.far {
+    opacity: 0.25;
+    filter: blur(2px);
+    transform: scale(0.85);
+}
+
+.player-bottom-card {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: space-evenly;
+}
+
+.controls-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+#playlist-container mdui-list-item[active] {
+    background: rgba(var(--mdui-color-primary), 0.1);
+    border-radius: 12px;
+}
+
+.blog-scroll {
+    max-height: 55vh;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.floating-dock {
+    position: fixed;
+    background: rgba(var(--mdui-color-surface-container-high), 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 12px 24px;
+    border-radius: 40px;
+    display: flex;
+    gap: 16px;
+    border: 1px solid rgba(var(--mdui-color-outline), 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.about-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(var(--mdui-color-primary), 0.3);
+}
+
+@keyframes subtleFlow {
+    from {
+        transform: rotateX(58deg) translateY(0);
+    }
+
+    to {
+        transform: rotateX(58deg) translateY(48px);
+    }
+}
+
+/* =========================================
+   Apple Music 沉浸式流体动态背景
+========================================= */
+.apple-music-bg {
+    position: fixed;
+    /* 放大到 200% 以防动画游荡时露出边缘 */
+    inset: -50%;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    background-color: var(--mdui-color-surface);
+}
+
+.am-bg-layer {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    /* 极大的模糊半径 + 拉高色彩饱和度 */
+    filter: blur(100px) saturate(250%) brightness(0.9);
+    transition: background-image 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+    will-change: transform;
+}
+
+/* 适配暗色模式：自动压暗背景，保证卡片上文字的绝对清晰 */
+.mdui-theme-dark .am-bg-layer {
+    filter: blur(100px) saturate(180%) brightness(0.35);
+}
+
+/* 图层 1：主色调顺时针缓慢游荡 */
+.am-bg-layer-1 {
+    animation: fluidPan1 25s infinite alternate ease-in-out;
+    opacity: 0.8;
+}
+
+/* 图层 2：叠加色逆时针游荡，制造色彩交融的呼吸感 */
+.am-bg-layer-2 {
+    animation: fluidPan2 30s infinite alternate ease-in-out;
+    opacity: 0.6;
+    mix-blend-mode: hard-light;
+    /* 让两层色彩交叠更梦幻 */
+}
+
+/* GPU 硬件加速的流体力学动画 */
+@keyframes fluidPan1 {
+    0% {
+        transform: scale(1.2) translate(0, 0) rotate(0deg);
+    }
+
+    50% {
+        transform: scale(1.5) translate(8%, 8%) rotate(10deg);
+    }
+
+    100% {
+        transform: scale(1.3) translate(-5%, 5%) rotate(-5deg);
+    }
+}
+
+@keyframes fluidPan2 {
+    0% {
+        transform: scale(1.3) translate(0, 0) rotate(0deg);
+    }
+
+    50% {
+        transform: scale(1.6) translate(-8%, -5%) rotate(-8deg);
+    }
+
+    100% {
+        transform: scale(1.2) translate(5%, -8%) rotate(5deg);
+    }
+}
+
+/* =========================================
+   移动端响应式优化 (深度适配)
+========================================= */
+@media (max-width: 900px) {
+
+    body {
+        display: block;
+        padding-top: 5vh;
+    }
+
+    #app-container {
+        align-items: flex-start;
+    }
+
+    .bento-grid {
+        grid-template-columns: 1fr;
+        width: 92%;
+        padding-bottom: 90px;
+        /* 给底部的Dock栏留出空间 */
+    }
+
+    .item-half,
+    .item-full {
+        grid-column: 1 / -1;
+    }
+
+    /* 优化手机端卡片空间占比 */
+    :root {
+        --bento-gap: 12px;
+    }
+
+    .bento-item {
+        padding: 20px;
+        border-radius: 24px;
+    }
+
+    .m-col {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 16px;
+    }
+
+    .search-box {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 12px;
+    }
+
+    .search-box>div {
+        max-width: 100% !important;
+        width: 100%;
+        justify-content: space-between !important;
+    }
+
+    #playlist-id-input {
+        flex: 1;
+    }
+
+    /* 播放器区域高度极限压缩，确保手机一屏可见进度条 */
+    .cover-img-large {
+        width: 140px;
+        height: 140px;
+        margin-bottom: 12px;
+    }
+
+    .lyrics-container {
+        height: 160px;
+    }
+
+    .player-bottom-card {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .progress-area {
+        width: 100%;
+    }
+
+    .controls-main .play-btn {
+        transform: scale(1.3);
+    }
+
+    /* 底部导航栏适配拇指热区 */
+    .floating-dock {
+        width: 85%;
+        max-width: 320px;
+        padding: 10px 20px;
+        bottom: 20px;
+        justify-content: space-between;
+    }
+}
+
+/* 针对极小屏幕的额外优化 */
+@media (max-width: 380px) {
+    .bento-item {
+        padding: 16px;
+    }
+
+    .cover-img-large {
+        width: 120px;
+        height: 120px;
+    }
+
+    .lyrics-container {
+        height: 130px;
+    }
+
+    .hero-name {
+        font-size: 2.2rem;
+    }
+}
+
+/* =========================================
+   动效全局开关：当 body 有 .no-animations 时，禁用所有动画和过渡
+========================================= */
+.no-animations * {
+    animation: none !important;
+    transition: none !important;
+    transition-property: none !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+}
+
+/* 通用辅助类 */
+.text-primary {
+    color: rgb(var(--mdui-color-primary));
+}
+
+.text-tertiary {
+    color: rgb(var(--mdui-color-tertiary));
+}
+
+.text-error {
+    color: rgb(var(--mdui-color-error));
+}
+
+.text-center {
+    text-align: center;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.mt-24 {
+    margin-top: 24px;
+}
+
+.mt-12 {
+    margin-top: 12px;
+}
+
+.mt-8 {
+    margin-top: 8px;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+.mb-8 {
+    margin-bottom: 8px;
+}
+
+.m-0 {
+    margin: 0;
+}
+
+.gap-16 {
+    gap: 16px;
+}
+
+.opacity-70 {
+    opacity: 0.7;
+}
+
+.fs-08rem {
+    font-size: 0.8rem;
+}
+
+.fw-600 {
+    font-weight: 600;
+}
+
+.flex-between-center {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-title {
+    font-weight: 600;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.hero-name {
+    font-size: 2.8rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -2px;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.7;
+    margin: 8px 0 0;
+}
+
+/* 页面切换时背景淡入淡出 */
+.am-bg-layer-1.fade-out,
+.am-bg-layer-2.fade-out {
+    opacity: 0;
+}
+
+.am-bg-layer-1.fade-in,
+.am-bg-layer-2.fade-in {
+    opacity: 0.8;
+    animation: bgFadeIn 0.5s ease forwards;
+}
+
+@keyframes bgFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 0.8;
+    }
+}
+
+/* 暗色模式下的淡入 */
+.mdui-theme-dark .am-bg-layer-1.fade-in,
+.mdui-theme-dark .am-bg-layer-2.fade-in {
+    animation: bgFadeInDark 0.5s ease forwards;
+}
+
+@keyframes bgFadeInDark {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 0.6;
+    }
+}

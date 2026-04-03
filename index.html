@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh" class="mdui-theme-auto">
+
+<head>
+    <meta charset="UTF-8">
+    <title>XQFMusicPlayer</title>
+    <!-- 优化移动端视口，禁止双击放大提升操作手感 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- 适配亮暗色模式的沉浸式状态栏 -->
+    <meta name="theme-color" content="#f5f5f5" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
+    <link rel="stylesheet" href="./src/style.css">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+</head>
+
+<body>
+    <div class="depth-layer"></div>
+
+    <main id="app-container">
+        <section id="home" class="bento-grid" style="display: none;">
+            <div class="bento-item item-full animate-pop m-col">
+                <div>
+                    <h1 class="hero-name"><span class="text-primary">NetEaseMusic</span> Playlist</h1>
+                    <p class="hero-subtitle">网易云音乐歌单播放器</p>
+                </div>
+            </div>
+
+            <div class="bento-item item-full animate-pop">
+                <div class="search-box flex-between-center mb-20 gap-16">
+                    <span class="section-title m-0">Playlist</span>
+                    <div style="display: flex; align-items: center; gap: 8px; justify-content: flex-end;">
+                        <mdui-text-field id="playlist-id-input" variant="outlined" placeholder="网易云歌单ID或分享链接"
+                            value="3778678">
+                        </mdui-text-field>
+                        <mdui-button-icon id="btn-load" icon="search" variant="filled"></mdui-button-icon>
+                    </div>
+                </div>
+                <div class="blog-scroll">
+                    <mdui-list id="playlist-container"></mdui-list>
+                </div>
+            </div>
+        </section>
+
+        <section id="player" class="bento-grid" style="display: none;">
+            <div class="bento-item item-half animate-pop player-info-card">
+                <img id="cover-img" src="https://via.placeholder.com/300" class="cover-img-large spin-anim paused mb-20"
+                    alt="封面图">
+                <h2 id="song-name" class="song-title text-primary">等待播放...</h2>
+                <p id="artist-name" class="song-artist">未知歌手</p>
+            </div>
+            <div class="bento-item item-half animate-pop lyrics-card">
+                <div class="lyrics-container" id="lyrics-container">
+                    <ul id="lyrics-list" class="lyrics-list">
+                        <li class="lyric-line">暂无歌词</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="bento-item item-full animate-pop player-bottom-card">
+                <div class="controls-main">
+                    <mdui-button-icon id="btn-mode" icon="repeat" variant="text"></mdui-button-icon>
+                    <mdui-button-icon id="btn-prev" icon="skip_previous" variant="tonal"></mdui-button-icon>
+                    <mdui-button-icon id="btn-play" icon="play_arrow" variant="filled"
+                        class="play-btn"></mdui-button-icon>
+                    <mdui-button-icon id="btn-next" icon="skip_next" variant="tonal"></mdui-button-icon>
+                    <mdui-button-icon icon="picture_in_picture_alt" variant="text" id="btn-pip-lyrics"
+                        title="画中画歌词"></mdui-button-icon>
+                    <mdui-button-icon href="#home" icon="queue_music" variant="text">
+                    </mdui-button-icon>
+                </div>
+
+                <div class="progress-area" style="flex: 1; min-width: 250px;">
+                    <div class="flex-between-center fs-08rem opacity-70 mb-8">
+                        <span id="time-current">00:00</span>
+                        <span id="time-total">00:00</span>
+                    </div>
+                    <mdui-slider id="progress-bar" value="0" min="0" max="100" step="0.1">
+                    </mdui-slider>
+                </div>
+            </div>
+        </section>
+
+        <section id="settings" class="bento-grid" style="display: none;">
+            <div class="bento-item item-full animate-pop">
+                <h1 class="hero-name"><span class="text-tertiary">App</span> Settings</h1>
+                <p class="hero-subtitle">自定义你的播放器与存储体验</p>
+            </div>
+
+            <div id="volume-section" class="bento-item item-half animate-pop">
+                <span class="section-title mb-20">Volume</span>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <mdui-icon name="volume_up" class="opacity-70"></mdui-icon>
+                    <mdui-slider id="volume-slider" value="100" min="0" max="100" style="flex: 1;"></mdui-slider>
+                </div>
+            </div>
+
+            <div class="bento-item animate-pop">
+                <span class="section-title mb-20">Theme</span>
+                <div class="settings-theme-row flex-between-center w-100 m-0">
+                    <span class="fw-600">深色模式</span>
+                    <mdui-switch id="theme-switch"></mdui-switch>
+                </div>
+            </div>
+
+            <div class="bento-item animate-pop">
+                <span class="section-title mb-20">Animation</span>
+                <div class="flex-between-center w-100 m-0">
+                    <span class="fw-600">启用动效</span>
+                    <mdui-switch id="animation-switch" checked></mdui-switch>
+                </div>
+                <p class="opacity-70 fs-08rem m-0 mt-8">关闭后页面切换、歌词入场等动画将全部禁用</p>
+            </div>
+
+            <!-- 先禁用了 -->
+            <div class="bento-item animate-pop flex-between-center m-col" style="display: none;">
+                <div>
+                    <span class="fw-600">清除播放缓存</span>
+                    <p class="opacity-70 fs-08rem m-0 mt-8">将删除本地存储的歌单和播放状态（刷新生效）</p>
+                </div>
+                <mdui-button id="btn-clear-data" variant="tonal" icon="delete_outline">清除数据</mdui-button>
+            </div>
+
+            <div class="bento-item item-full animate-pop">
+                <span class="section-title mb-20">About</span>
+                <div class="flex-between-center m-col" style="gap: 20px;">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <img src="https://s41.ax1x.com/2026/04/03/peY2w8O.jpg" alt="Avatar" class="about-avatar">
+                        <div>
+                            <h3 class="m-0 fw-600" style="font-size: 1.2rem;">XQFMusicPlayer</h3>
+                            <p class="m-0 mt-8 opacity-70 fs-08rem">Version 1.0.0 · Designed by 小枫_QWQ</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <mdui-button href="https://xiaofengqwq.com" target="_blank" variant="tonal"
+                            icon="language">个人主页</mdui-button>
+                        <mdui-button-icon href="https://github.com/XiaoFeng-QWQ" target="_blank" icon="code"
+                            variant="tonal"></mdui-button-icon>
+                    </div>
+                </div>
+                <div class="mt-24 opacity-70 fs-08rem"
+                    style="line-height: 1.6; border-top: 1px solid rgba(var(--mdui-color-outline), 0.2); padding-top: 16px;">
+                    这是一款基于 MDUI 2 与 GSAP 构建的 Bento 风格 Web 音乐播放器。<br>
+                    支持网易云歌单解析、动态歌词滚动、自适应主题以及本地状态持久化保存功能。
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <nav class="floating-dock" id="dock" data-position="bottom">
+        <mdui-button-icon href="#home" data-route="home" icon="queue_music" variant="filled"></mdui-button-icon>
+        <mdui-button-icon href="#player" data-route="player" icon="album" variant="text"></mdui-button-icon>
+        <mdui-button-icon href="#settings" data-route="settings" icon="settings" variant="text"></mdui-button-icon>
+    </nav>
+
+    <div class="apple-music-bg">
+        <div id="bg-layer-1" class="am-bg-layer am-bg-layer-1"></div>
+        <div id="bg-layer-2" class="am-bg-layer am-bg-layer-2"></div>
+    </div>
+
+    <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script type="module" src="./src/script.js"></script>
+</body>
+
+</html>
