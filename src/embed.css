@@ -27,14 +27,8 @@ body {
 }
 
 .embed-shell {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    min-height: 160px;
-    padding: var(--embed-padding);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 100dvw;
+    height: 100dvh;
     overflow: hidden;
 }
 
@@ -80,17 +74,17 @@ body {
 
 .player-card {
     position: relative;
-    width: min(100%, 760px);
-    min-height: 136px;
+    width: 100%;
     display: grid;
     grid-template-columns: var(--cover-size) minmax(0, 1fr);
     gap: var(--card-gap);
     align-items: center;
     padding: var(--card-padding);
-    border: 1px solid rgba(var(--mdui-color-outline), 0.14);
+    /* border: 1px solid rgba(var(--mdui-color-outline), 0.14); */
     -webkit-backdrop-filter: blur(16px);
     box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
     overflow: hidden;
+    height: 100%;
 }
 
 .cover {
@@ -235,7 +229,7 @@ body {
     }
 
     .player-card {
-        min-height: 132px;
+        /* min-height: 132px; */
     }
 
     .song-name {
@@ -271,7 +265,7 @@ body {
         --content-gap: 10px;
         --control-gap: 8px;
         --lyric-width: 92%;
-        --lyric-offset-y: -24px;
+        --lyric-offset-y: 0px;
     }
 
     .player-card {

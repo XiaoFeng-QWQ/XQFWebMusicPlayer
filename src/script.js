@@ -455,7 +455,7 @@ class MusicPlayer {
         this.els.embedPlaylistInput.value = playlistId;
         const theme = this.els.embedThemeSelect.value || 'auto';
         const embedUrl = this.getEmbedUrl(playlistId, theme);
-        const code = `<iframe src="${embedUrl}" width="100%" height="180" style="border:0;border-radius:28px;overflow:hidden;" loading="lazy" allow="autoplay"></iframe>`;
+        const code = `<iframe src="${embedUrl}" width="100%" height="180" style="border:0" loading="lazy" allow="autoplay"></iframe>`;
 
         this.els.embedPreview.src = embedUrl;
         this.els.embedCodeOutput.value = code;
