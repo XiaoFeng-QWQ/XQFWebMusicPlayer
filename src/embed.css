@@ -1,0 +1,328 @@
+@import url(./style.css);
+
+:root {
+    --embed-padding: 12px;
+    --card-padding: 20px;
+    --card-radius: 28px;
+    --cover-size: 96px;
+    --card-gap: 18px;
+    --content-gap: 14px;
+    --control-gap: 14px;
+    --lyric-width: 80%;
+    --lyric-offset-y: -10px;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Plus Jakarta Sans', 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    color: rgb(var(--mdui-color-on-surface));
+}
+
+body {
+    min-height: 160px;
+}
+
+.embed-shell {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 160px;
+    padding: var(--embed-padding);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.ambient-bg {
+    position: absolute;
+    inset: -70%;
+    background-position: center;
+    background-size: cover;
+    filter: blur(80px) saturate(210%) brightness(0.95);
+    opacity: 0;
+    transform: scale(1.2);
+    transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: floatBg 18s ease-in-out infinite alternate;
+    will-change: opacity, transform;
+}
+
+.ambient-bg.is-active {
+    opacity: 0.74;
+}
+
+.ambient-bg:nth-of-type(2) {
+    animation-delay: -9s;
+}
+
+.mdui-theme-dark .ambient-bg {
+    filter: blur(80px) saturate(180%) brightness(0.35);
+}
+
+.mdui-theme-dark .ambient-bg.is-active {
+    opacity: 0.68;
+}
+
+.grid-layer {
+    position: absolute;
+    inset: -60%;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 42px 42px;
+    transform: rotateX(58deg);
+    pointer-events: none;
+}
+
+.player-card {
+    position: relative;
+    width: min(100%, 760px);
+    min-height: 136px;
+    display: grid;
+    grid-template-columns: var(--cover-size) minmax(0, 1fr);
+    gap: var(--card-gap);
+    align-items: center;
+    padding: var(--card-padding);
+    border: 1px solid rgba(var(--mdui-color-outline), 0.14);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+}
+
+.cover {
+    width: var(--cover-size);
+    height: var(--cover-size);
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+    background: rgba(var(--mdui-color-surface-container-highest), 0.8);
+}
+
+.cover.playing {
+    animation: spin 20s linear infinite;
+}
+
+.content {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--content-gap);
+}
+
+.meta {
+    position: relative;
+    min-width: 0;
+    display: grid;
+    gap: 6px;
+}
+
+.song-name,
+.artist-name,
+.lyric-line {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.song-name {
+    font-size: 1.25rem;
+    line-height: 1.2;
+    font-weight: 800;
+    color: rgb(var(--mdui-color-primary));
+}
+
+.artist-name {
+    font-size: 0.92rem;
+    opacity: 0.7;
+}
+
+.lyric-line {
+    min-height: 1.4em;
+    width: var(--lyric-width);
+    padding-top: 4px;
+    font-size: 0.96rem;
+    line-height: 1.4;
+    font-weight: 700;
+    color: rgb(var(--mdui-color-primary));
+    text-align: center;
+    opacity: 0.92;
+    transform: translate(-50%, 0);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    position: absolute;
+    top: calc(100% + var(--lyric-offset-y));
+    left: 50%;
+    pointer-events: none;
+}
+
+.lyric-line.is-changing {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+}
+
+.controls-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: var(--control-gap);
+    align-items: center;
+}
+
+.transport {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.time {
+    font-size: 0.78rem;
+    opacity: 0.68;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.status {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    text-align: center;
+    background: rgba(var(--mdui-color-surface-container-low), 0.72);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    font-weight: 600;
+    color: rgb(var(--mdui-color-primary));
+    transition: opacity 0.25s ease;
+}
+
+.status.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes floatBg {
+    from {
+        transform: scale(1.25) translate(-2%, -2%) rotate(-3deg);
+    }
+
+    to {
+        transform: scale(1.42) translate(4%, 3%) rotate(4deg);
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --embed-padding: 10px;
+        --card-padding: 16px;
+        --card-radius: 24px;
+        --cover-size: 76px;
+        --card-gap: 14px;
+        --content-gap: 12px;
+        --control-gap: 10px;
+        --lyric-width: 84%;
+        --lyric-offset-y: -27px;
+    }
+
+    .player-card {
+        min-height: 132px;
+    }
+
+    .song-name {
+        font-size: 1.05rem;
+    }
+
+    .artist-name,
+    .lyric-line {
+        font-size: 0.82rem;
+    }
+
+    .controls-row {
+        grid-template-columns: 1fr auto;
+    }
+
+    .progress {
+        grid-column: 1 / -1;
+        order: -1;
+    }
+
+    .time {
+        display: none;
+    }
+}
+
+@media (max-width: 380px) {
+    :root {
+        --embed-padding: 8px;
+        --card-padding: 12px;
+        --card-radius: 20px;
+        --cover-size: 60px;
+        --card-gap: 10px;
+        --content-gap: 10px;
+        --control-gap: 8px;
+        --lyric-width: 92%;
+        --lyric-offset-y: -24px;
+    }
+
+    .player-card {
+        min-height: 124px;
+    }
+
+    .song-name {
+        font-size: 0.98rem;
+    }
+
+    .artist-name,
+    .lyric-line {
+        font-size: 0.76rem;
+    }
+
+    .transport {
+        gap: 4px;
+    }
+
+    .transport mdui-button-icon {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+@media (max-width: 300px) {
+    :root {
+        --cover-size: 48px;
+        --card-gap: 8px;
+        --lyric-width: 100%;
+        --lyric-offset-y: -22px;
+    }
+
+    .player-card {
+        min-height: 112px;
+    }
+
+    .song-name {
+        font-size: 0.9rem;
+    }
+
+    .artist-name {
+        display: none;
+    }
+
+    .lyric-line {
+        top: calc(100% + 2px);
+    }
+
+    .transport mdui-button-icon {
+        width: 32px;
+        height: 32px;
+    }
+}

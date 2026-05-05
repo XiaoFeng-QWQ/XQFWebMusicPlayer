@@ -113,6 +113,29 @@
                 <p class="opacity-70 fs-08rem m-0 mt-8">关闭后页面切换、歌词入场等动画将全部禁用</p>
             </div>
 
+            <div class="bento-item item-full animate-pop">
+                <span class="section-title mb-20">Embed Player</span>
+                <div class="embed-generator">
+                    <div class="embed-form">
+                        <mdui-text-field id="embed-playlist-input" variant="outlined" label="网易云歌单ID或分享链接"
+                            value="6634356386"></mdui-text-field>
+                        <mdui-select id="embed-theme-select" variant="outlined" label="主题" value="auto">
+                            <mdui-menu-item value="auto" selected>跟随系统</mdui-menu-item>
+                            <mdui-menu-item value="light">浅色</mdui-menu-item>
+                            <mdui-menu-item value="dark">深色</mdui-menu-item>
+                        </mdui-select>
+                        <mdui-button id="btn-generate-embed" variant="filled" icon="code">生成代码</mdui-button>
+                    </div>
+                    <iframe id="embed-preview" class="embed-preview" title="iframe 音乐播放器预览"></iframe>
+                    <div class="embed-code-row">
+                        <mdui-text-field id="embed-code-output" class="embed-code" variant="outlined" rows="3"
+                            readonly></mdui-text-field>
+                        <mdui-button-icon id="btn-copy-embed" icon="content_copy" variant="tonal"
+                            title="复制代码"></mdui-button-icon>
+                    </div>
+                </div>
+            </div>
+
             <!-- 先禁用了 -->
             <div class="bento-item animate-pop flex-between-center m-col" style="display: none;">
                 <div>
@@ -155,7 +178,7 @@
     </nav>
 
     <div class="apple-music-bg">
-        <div id="bg-layer-1" class="am-bg-layer am-bg-layer-1"></div>
+        <div id="bg-layer-1" class="am-bg-layer am-bg-layer-1 is-active"></div>
         <div id="bg-layer-2" class="am-bg-layer am-bg-layer-2"></div>
     </div>
 

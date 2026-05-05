@@ -7,7 +7,6 @@ class HashRouter {
         this.pipWindow = null;
         this.pipLyrics = null;
         this.app = app;
-        this.isTransitioningBg = false;
         this.init();
     }
     init() {
@@ -20,54 +19,10 @@ class HashRouter {
         if (!this.routes.includes(hash)) { hash = this.defaultRoute; window.location.hash = `#${hash}`; return; }
         if (hash === this.currentRoute) return;
 
-        this.fadeOutBackground(() => {
-            this.transitionPage(this.currentRoute, hash);
-            this.updateDockState(hash);
-            this.currentRoute = hash;
-            this.updateBackgroundOnRouteChange(hash);
-        });
-    }
-
-    fadeOutBackground(callback) {
-        if (this.isTransitioningBg) {
-            if (callback) callback();
-            return;
-        }
-        this.isTransitioningBg = true;
-
-        const bgLayer1 = document.getElementById('bg-layer-1');
-        const bgLayer2 = document.getElementById('bg-layer-2');
-
-        if (bgLayer1 && bgLayer2) {
-            bgLayer1.classList.add('fade-out');
-            bgLayer2.classList.add('fade-out');
-            bgLayer1.classList.remove('fade-in');
-            bgLayer2.classList.remove('fade-in');
-
-            setTimeout(() => {
-                this.isTransitioningBg = false;
-                if (callback) callback();
-            }, 300);
-        } else {
-            if (callback) callback();
-        }
-    }
-
-    fadeInBackground() {
-        const bgLayer1 = document.getElementById('bg-layer-1');
-        const bgLayer2 = document.getElementById('bg-layer-2');
-
-        if (bgLayer1 && bgLayer2) {
-            bgLayer1.classList.remove('fade-out');
-            bgLayer2.classList.remove('fade-out');
-            bgLayer1.classList.add('fade-in');
-            bgLayer2.classList.add('fade-in');
-
-            setTimeout(() => {
-                if (bgLayer1) bgLayer1.classList.remove('fade-in');
-                if (bgLayer2) bgLayer2.classList.remove('fade-in');
-            }, 500);
-        }
+        this.transitionPage(this.currentRoute, hash);
+        this.updateDockState(hash);
+        this.currentRoute = hash;
+        this.updateBackgroundOnRouteChange(hash);
     }
 
     updateBackgroundOnRouteChange(route) {
@@ -75,24 +30,10 @@ class HashRouter {
             const isPlayerPage = route === 'player';
             const coverUrl = this.app.player.playlist[this.app.player.currentIndex]?.pic;
 
-            if (isPlayerPage && coverUrl) {
-                const img = new Image();
-                img.src = coverUrl;
-                img.onload = () => {
-                    if (this.app.player.els.bgLayer1 && this.app.player.els.bgLayer2) {
-                        this.app.player.els.bgLayer1.style.backgroundImage = `url(${coverUrl})`;
-                        this.app.player.els.bgLayer2.style.backgroundImage = `url(${coverUrl})`;
-                        this.fadeInBackground();
-                    }
-                };
-                img.onerror = () => {
-                    this.fadeInBackground();
-                };
+            if (isPlayerPage) {
+                this.app.player.setAmbientBackground(coverUrl);
             } else {
-                if (this.app.player.els.bgLayer1 && this.app.player.els.bgLayer2) {
-                    this.app.player.els.bgLayer1.style.backgroundImage = 'none';
-                    this.app.player.els.bgLayer2.style.backgroundImage = 'none';
-                }
+                this.app.player.clearAmbientBackground();
             }
         }
     }
@@ -169,6 +110,9 @@ class MusicPlayer {
         this.pipLyrics = null;
         this.pipLines = [];
         this.isDraggingProgress = false;
+        this.activeBgIndex = 0;
+        this.currentCoverUrl = '';
+        this.backgroundSwitchToken = 0;
 
         this.app = app;
 
@@ -192,7 +136,13 @@ class MusicPlayer {
             lyricsList: document.getElementById('lyrics-list'),
             volumeSection: document.getElementById('volume-section'),
             bgLayer1: document.getElementById('bg-layer-1'),
-            bgLayer2: document.getElementById('bg-layer-2')
+            bgLayer2: document.getElementById('bg-layer-2'),
+            embedPlaylistInput: document.getElementById('embed-playlist-input'),
+            embedThemeSelect: document.getElementById('embed-theme-select'),
+            btnGenerateEmbed: document.getElementById('btn-generate-embed'),
+            btnCopyEmbed: document.getElementById('btn-copy-embed'),
+            embedPreview: document.getElementById('embed-preview'),
+            embedCodeOutput: document.getElementById('embed-code-output')
         };
 
         this.init();
@@ -474,6 +424,58 @@ class MusicPlayer {
             this.audio.volume = e.target.value / 100;
             this.saveState();
         });
+
+        this.els.btnGenerateEmbed.addEventListener('click', () => this.generateEmbedCode());
+        this.els.embedPlaylistInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.generateEmbedCode();
+            }
+        });
+        this.els.embedThemeSelect.addEventListener('change', () => this.generateEmbedCode(false));
+        this.els.btnCopyEmbed.addEventListener('click', () => this.copyEmbedCode());
+
+        this.generateEmbedCode(false);
+    }
+
+    getEmbedUrl(playlistId, theme) {
+        const url = new URL('embed.html', window.location.href);
+        url.searchParams.set('id', playlistId);
+        url.searchParams.set('theme', theme || 'auto');
+        return url.toString();
+    }
+
+    generateEmbedCode(showMessage = true) {
+        const playlistId = this.extractPlaylistId(this.els.embedPlaylistInput.value);
+        if (!playlistId) {
+            mdui.snackbar({ message: "无法识别歌单ID，请输入正确的网易云歌单ID或分享链接" });
+            return;
+        }
+
+        this.els.embedPlaylistInput.value = playlistId;
+        const theme = this.els.embedThemeSelect.value || 'auto';
+        const embedUrl = this.getEmbedUrl(playlistId, theme);
+        const code = `<iframe src="${embedUrl}" width="100%" height="180" style="border:0;border-radius:28px;overflow:hidden;" loading="lazy" allow="autoplay"></iframe>`;
+
+        this.els.embedPreview.src = embedUrl;
+        this.els.embedCodeOutput.value = code;
+
+        if (showMessage) mdui.snackbar({ message: "iframe 播放器代码已生成" });
+    }
+
+    async copyEmbedCode() {
+        const code = this.els.embedCodeOutput.value;
+        if (!code) return;
+
+        try {
+            await navigator.clipboard.writeText(code);
+        } catch (error) {
+            this.els.embedCodeOutput.focus();
+            this.els.embedCodeOutput.select();
+            document.execCommand('copy');
+        }
+
+        mdui.snackbar({ message: "iframe 代码已复制" });
     }
 
     async loadPlaylist(id) {
@@ -510,52 +512,65 @@ class MusicPlayer {
         });
     }
 
-    updateBackgroundCover(coverUrl, skipFade = false) {
+    preloadImage(url) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(url);
+            img.onerror = reject;
+            img.src = url;
+        });
+    }
+
+    async setAmbientBackground(url) {
+        const coverUrl = url || 'https://via.placeholder.com/300';
+        if (coverUrl === this.currentCoverUrl) return;
+
+        const bgLayer1 = this.els.bgLayer1;
+        const bgLayer2 = this.els.bgLayer2;
+        if (!bgLayer1 || !bgLayer2) return;
+
+        const token = ++this.backgroundSwitchToken;
+        const layers = [bgLayer1, bgLayer2];
+        const nextIndex = this.activeBgIndex === 0 ? 1 : 0;
+        const currentLayer = layers[this.activeBgIndex];
+        const nextLayer = layers[nextIndex];
+
+        try {
+            await this.preloadImage(coverUrl);
+        } catch (error) {
+            console.warn('背景图片预加载失败', error);
+        }
+
+        if (token !== this.backgroundSwitchToken) return;
+
+        nextLayer.style.backgroundImage = `url("${coverUrl}")`;
+        nextLayer.classList.remove('is-active');
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                nextLayer.classList.add('is-active');
+                currentLayer.classList.remove('is-active');
+                this.activeBgIndex = nextIndex;
+                this.currentCoverUrl = coverUrl;
+            });
+        });
+    }
+
+    clearAmbientBackground() {
+        this.backgroundSwitchToken++;
+        this.currentCoverUrl = '';
+        this.els.bgLayer1?.classList.remove('is-active');
+        this.els.bgLayer2?.classList.remove('is-active');
+    }
+
+    updateBackgroundCover(coverUrl) {
         const isPlayerPage = window.location.hash === '#player';
 
         if (isPlayerPage) {
-            const img = new Image();
-            img.src = coverUrl;
-            img.onload = () => {
-                if (this.els.bgLayer1 && this.els.bgLayer2) {
-                    if (!skipFade) {
-                        this.fadeOutAndUpdateBackground(coverUrl);
-                    } else {
-                        this.els.bgLayer1.style.backgroundImage = `url(${coverUrl})`;
-                        this.els.bgLayer2.style.backgroundImage = `url(${coverUrl})`;
-                    }
-                }
-            };
+            this.setAmbientBackground(coverUrl);
         } else {
-            if (this.els.bgLayer1 && this.els.bgLayer2) {
-                this.els.bgLayer1.style.backgroundImage = 'none';
-                this.els.bgLayer2.style.backgroundImage = 'none';
-            }
+            this.clearAmbientBackground();
         }
-    }
-
-    fadeOutAndUpdateBackground(coverUrl) {
-        const bgLayer1 = this.els.bgLayer1;
-        const bgLayer2 = this.els.bgLayer2;
-
-        if (!bgLayer1 || !bgLayer2) return;
-
-        bgLayer1.classList.add('fade-out');
-        bgLayer2.classList.add('fade-out');
-
-        setTimeout(() => {
-            bgLayer1.style.backgroundImage = `url(${coverUrl})`;
-            bgLayer2.style.backgroundImage = `url(${coverUrl})`;
-            bgLayer1.classList.remove('fade-out');
-            bgLayer2.classList.remove('fade-out');
-            bgLayer1.classList.add('fade-in');
-            bgLayer2.classList.add('fade-in');
-
-            setTimeout(() => {
-                bgLayer1.classList.remove('fade-in');
-                bgLayer2.classList.remove('fade-in');
-            }, 500);
-        }, 300);
     }
 
     loadSong(index, autoPlay = true) {
@@ -573,7 +588,7 @@ class MusicPlayer {
         const coverUrl = song.pic || 'https://via.placeholder.com/300';
         this.els.coverImg.src = coverUrl;
 
-        this.updateBackgroundCover(coverUrl, false);
+        this.updateBackgroundCover(coverUrl);
 
         const items = this.els.playlistContainer.querySelectorAll('mdui-list-item');
         items.forEach((item, i) => {

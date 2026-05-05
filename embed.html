@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh" class="mdui-theme-auto">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f5f5" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+    <title>XQFMusicPlayer Embed</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="./src/embed.css">
+</head>
+
+<body>
+    <div class="embed-shell">
+        <div id="ambient-bg-a" class="ambient-bg is-active"></div>
+        <div id="ambient-bg-b" class="ambient-bg"></div>
+        <div class="grid-layer"></div>
+
+        <article class="player-card bento-item">
+            <img id="cover" class="cover" src="https://via.placeholder.com/300" alt="封面图">
+            <div class="content">
+                <div class="meta">
+                    <span id="song-name" class="song-name">等待播放...</span>
+                    <span id="artist-name" class="artist-name">XQFMusicPlayer</span>
+                    <span id="lyric-line" class="lyric-line">歌词准备中...</span>
+                </div>
+
+                <div class="controls-row">
+                    <div class="transport">
+                        <mdui-button-icon id="btn-prev" icon="skip_previous" variant="tonal"></mdui-button-icon>
+                        <mdui-button-icon id="btn-play" icon="play_arrow" variant="filled"></mdui-button-icon>
+                        <mdui-button-icon id="btn-next" icon="skip_next" variant="tonal"></mdui-button-icon>
+                    </div>
+                    <mdui-slider id="progress" class="progress" value="0" min="0" max="100" step="0.1"></mdui-slider>
+                    <span class="time"><span id="time-current">00:00</span> / <span id="time-total">00:00</span></span>
+                </div>
+            </div>
+            <div id="status" class="status">正在拉取歌单数据...</div>
+        </article>
+    </div>
+
+    <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
+    <script src="./src/embed.js"></script>
+</body>
+
+</html>
