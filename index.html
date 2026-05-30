@@ -1,190 +1,256 @@
 <!DOCTYPE html>
-<html lang="zh" class="mdui-theme-auto">
+<html lang="zh-CN">
 
 <head>
     <meta charset="UTF-8">
-    <title>XQFMusicPlayer</title>
-    <!-- 优化移动端视口，禁止双击放大提升操作手感 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- 适配亮暗色模式的沉浸式状态栏 -->
-    <meta name="theme-color" content="#f5f5f5" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
-
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
+    <title>Flux Audio - 沉浸式音乐播放器</title>
     <link rel="stylesheet" href="./src/style.css">
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 </head>
 
-<body>
-    <div class="depth-layer"></div>
+<body class="tab-list">
+    <img id="ambient-bg" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="">
 
-    <main id="app-container">
-        <section id="home" class="bento-grid" style="display: none;">
-            <div class="bento-item item-full animate-pop m-col">
-                <div>
-                    <h1 class="hero-name"><span class="text-primary">NetEaseMusic</span> Playlist</h1>
-                    <p class="hero-subtitle">网易云音乐歌单播放器</p>
-                </div>
-            </div>
+    <div class="layout">
+        <div class="mobile-nav">
+            <button id="nav-list" class="active" onclick="switchTab('list')">播放队列</button>
+            <button id="nav-player" onclick="switchTab('player')">正在播放</button>
+            <button id="nav-settings" onclick="switchTab('settings')">设置</button>
+        </div>
 
-            <div class="bento-item item-full animate-pop">
-                <div class="search-box flex-between-center mb-20 gap-16">
-                    <span class="section-title m-0">Playlist</span>
-                    <div style="display: flex; align-items: center; gap: 8px; justify-content: flex-end;">
-                        <mdui-text-field id="playlist-id-input" variant="outlined" placeholder="网易云歌单ID或分享链接"
-                            value="3778678">
-                        </mdui-text-field>
-                        <mdui-button-icon id="btn-load" icon="search" variant="filled"></mdui-button-icon>
-                    </div>
-                </div>
-                <div class="blog-scroll">
-                    <mdui-list id="playlist-container"></mdui-list>
-                </div>
-            </div>
-        </section>
+        <div class="main">
+            <div id="view-player">
+                <div class="player-content-area" onclick="toggleMobileLyrics()">
 
-        <section id="player" class="bento-grid" style="display: none;">
-            <div class="bento-item item-half animate-pop player-info-card">
-                <img id="cover-img" src="https://via.placeholder.com/300" class="cover-img-large spin-anim paused mb-20"
-                    alt="封面图">
-                <h2 id="song-name" class="song-title text-primary">等待播放...</h2>
-                <p id="artist-name" class="song-artist">未知歌手</p>
-            </div>
-            <div class="bento-item item-half animate-pop lyrics-card">
-                <div class="lyrics-container" id="lyrics-container">
-                    <ul id="lyrics-list" class="lyrics-list">
-                        <li class="lyric-line">暂无歌词</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="bento-item item-full animate-pop player-bottom-card">
-                <div class="controls-main">
-                    <mdui-button-icon id="btn-mode" icon="repeat" variant="text"></mdui-button-icon>
-                    <mdui-button-icon id="btn-prev" icon="skip_previous" variant="tonal"></mdui-button-icon>
-                    <mdui-button-icon id="btn-play" icon="play_arrow" variant="filled"
-                        class="play-btn"></mdui-button-icon>
-                    <mdui-button-icon id="btn-next" icon="skip_next" variant="tonal"></mdui-button-icon>
-                    <mdui-button-icon icon="picture_in_picture_alt" variant="text" id="btn-pip-lyrics"
-                        title="画中画歌词"></mdui-button-icon>
-                    <mdui-button-icon href="#home" icon="queue_music" variant="text">
-                    </mdui-button-icon>
-                </div>
-
-                <div class="progress-area" style="flex: 1; min-width: 250px;">
-                    <div class="flex-between-center fs-08rem opacity-70 mb-8">
-                        <span id="time-current">00:00</span>
-                        <span id="time-total">00:00</span>
-                    </div>
-                    <mdui-slider id="progress-bar" value="0" min="0" max="100" step="0.1">
-                    </mdui-slider>
-                </div>
-            </div>
-        </section>
-
-        <section id="settings" class="bento-grid" style="display: none;">
-            <div class="bento-item item-full animate-pop">
-                <h1 class="hero-name"><span class="text-tertiary">App</span> Settings</h1>
-                <p class="hero-subtitle">自定义你的播放器与存储体验</p>
-            </div>
-
-            <div id="volume-section" class="bento-item item-half animate-pop">
-                <span class="section-title mb-20">Volume</span>
-                <div style="display: flex; align-items: center; gap: 16px;">
-                    <mdui-icon name="volume_up" class="opacity-70"></mdui-icon>
-                    <mdui-slider id="volume-slider" value="100" min="0" max="100" style="flex: 1;"></mdui-slider>
-                </div>
-            </div>
-
-            <div class="bento-item animate-pop">
-                <span class="section-title mb-20">Theme</span>
-                <div class="settings-theme-row flex-between-center w-100 m-0">
-                    <span class="fw-600">深色模式</span>
-                    <mdui-switch id="theme-switch"></mdui-switch>
-                </div>
-            </div>
-
-            <div class="bento-item animate-pop">
-                <span class="section-title mb-20">Animation</span>
-                <div class="flex-between-center w-100 m-0">
-                    <span class="fw-600">启用动效</span>
-                    <mdui-switch id="animation-switch" checked></mdui-switch>
-                </div>
-                <p class="opacity-70 fs-08rem m-0 mt-8">关闭后页面切换、歌词入场等动画将全部禁用</p>
-            </div>
-
-            <div class="bento-item item-full animate-pop">
-                <span class="section-title mb-20">Embed Player</span>
-                <div class="embed-generator">
-                    <div class="embed-form">
-                        <mdui-text-field id="embed-playlist-input" variant="outlined" label="网易云歌单ID或分享链接"
-                            value="6634356386"></mdui-text-field>
-                        <mdui-select id="embed-theme-select" variant="outlined" label="主题" value="auto">
-                            <mdui-menu-item value="auto" selected>跟随系统</mdui-menu-item>
-                            <mdui-menu-item value="light">浅色</mdui-menu-item>
-                            <mdui-menu-item value="dark">深色</mdui-menu-item>
-                        </mdui-select>
-                        <mdui-button id="btn-generate-embed" variant="filled" icon="code">生成代码</mdui-button>
-                    </div>
-                    <iframe id="embed-preview" class="embed-preview" title="iframe 音乐播放器预览"></iframe>
-                    <div class="embed-code-row">
-                        <mdui-text-field id="embed-code-output" class="embed-code" variant="outlined" rows="3"
-                            readonly></mdui-text-field>
-                        <mdui-button-icon id="btn-copy-embed" icon="content_copy" variant="tonal"
-                            title="复制代码"></mdui-button-icon>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 先禁用了 -->
-            <div class="bento-item animate-pop flex-between-center m-col" style="display: none;">
-                <div>
-                    <span class="fw-600">清除播放缓存</span>
-                    <p class="opacity-70 fs-08rem m-0 mt-8">将删除本地存储的歌单和播放状态（刷新生效）</p>
-                </div>
-                <mdui-button id="btn-clear-data" variant="tonal" icon="delete_outline">清除数据</mdui-button>
-            </div>
-
-            <div class="bento-item item-full animate-pop">
-                <span class="section-title mb-20">About</span>
-                <div class="flex-between-center m-col" style="gap: 20px;">
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <img src="https://s41.ax1x.com/2026/04/03/peY2w8O.jpg" alt="Avatar" class="about-avatar">
-                        <div>
-                            <h3 class="m-0 fw-600" style="font-size: 1.2rem;">XQFMusicPlayer</h3>
-                            <p class="m-0 mt-8 opacity-70 fs-08rem">Version 1.0.0 · Designed by 小枫_QWQ</p>
+                    <div class="player-top">
+                        <div class="player-info-meta">
+                            <div class="cover-wrap">
+                                <img id="cover" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
+                                    alt="cover">
+                            </div>
+                            <div class="info">
+                                <h2 id="track-name-large">无信号</h2>
+                                <h3 id="track-artist-large">等待音频信号...</h3>
+                            </div>
+                        </div>
+                        <div class="desktop-divider"></div>
+                        <div class="spectrum-wrap">
+                            <canvas id="spectrum-canvas"></canvas>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 12px;">
-                        <mdui-button href="https://xiaofengqwq.com" target="_blank" variant="tonal"
-                            icon="language">个人主页</mdui-button>
-                        <mdui-button-icon href="https://github.com/XiaoFeng-QWQ" target="_blank" icon="code"
-                            variant="tonal"></mdui-button-icon>
+
+                    <div class="lyrics-area" id="lrc-box">
+                        <div class="lrc-line">...</div>
+                    </div>
+
+                </div>
+
+                <div class="controls-area">
+                    <div class="progress-wrap" id="progress-wrap" onclick="seek(event)">
+                        <div class="progress-track">
+                            <div class="progress-bar" id="progress-bar"></div>
+                        </div>
+                    </div>
+                    <div class="control-row">
+                        <span id="time-cur">00:00</span>
+                        <div class="btn-group">
+                            <button onclick="prev()">
+                                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                                    <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+                                </svg>
+                            </button>
+                            <button id="btn-play" onclick="togglePlay()" style="opacity: 1;">
+                                <svg viewBox="0 0 24 24" width="36" height="36" fill="currentColor">
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
+                            </button>
+                            <button onclick="next()">
+                                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                                    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+                                </svg>
+                            </button>
+                        </div>
+                        <span id="time-dur">00:00</span>
                     </div>
                 </div>
-                <div class="mt-24 opacity-70 fs-08rem"
-                    style="line-height: 1.6; border-top: 1px solid rgba(var(--mdui-color-outline), 0.2); padding-top: 16px;">
-                    这是一款基于 MDUI 2 与 GSAP 构建的 Bento 风格 Web 音乐播放器。<br>
-                    支持网易云歌单解析、动态歌词滚动、自适应主题以及本地状态持久化保存功能。
+            </div>
+
+            <div id="view-settings">
+                <div class="settings-card">
+                    <h2>播放设置</h2>
+
+                    <div class="settings-row" style="margin-bottom: 25px;">
+                        <label>音量 (<span id="volume-val">100</span>%)</label>
+                        <div style="display: flex; align-items: center; gap: 15px; max-width: 400px; width: 100%;">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"
+                                style="color: var(--text-dim); flex-shrink: 0;">
+                                <path
+                                    d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zm-3 0L6.5 8H3v8h3.5l4.5 4.77V3.23zM16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+                            </svg>
+                            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1"
+                                oninput="setVolume(this.value)">
+                        </div>
+                    </div>
+
+                    <div class="settings-row" style="margin-bottom: 30px;">
+                        <label>声道平衡 (左 / 右)</label>
+                        <div style="display: flex; align-items: center; gap: 15px; max-width: 400px; width: 100%;">
+                            <span
+                                style="font-size: 11px; color: var(--text-dim); font-family: monospace; width: 30px; text-align: left;">左</span>
+                            <input type="range" id="panner-slider" min="-1" max="1" step="0.1" value="0"
+                                oninput="setPanning(this.value)">
+                            <span
+                                style="font-size: 11px; color: var(--text-dim); font-family: monospace; width: 60px; text-align: right;"
+                                id="panner-val">居中</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-row">
+                        <label style="margin-bottom: 12px; display: block;">均衡器 (5段 EQ)</label>
+
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;">
+                            <button class="btn-preset active" id="btn-preset-flat"
+                                onclick="applyPreset('flat')">原声</button>
+                            <button class="btn-preset" id="btn-preset-bass" onclick="applyPreset('bass')">重低音</button>
+                            <button class="btn-preset" id="btn-preset-vocal"
+                                onclick="applyPreset('vocal')">清澈人声</button>
+                            <button class="btn-preset" id="btn-preset-electro"
+                                onclick="applyPreset('electro')">电音</button>
+                            <button class="btn-preset" id="btn-preset-pop" onclick="applyPreset('pop')">流行</button>
+                        </div>
+
+                        <div
+                            style="display: flex; flex-direction: column; gap: 4px; max-width: 400px; width: 100%; margin-bottom: 12px;">
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); font-family: monospace;">
+                                <span>60 Hz</span>
+                                <span id="eq-60-val">0 dB</span>
+                            </div>
+                            <input type="range" id="eq-60" min="-12" max="12" step="1" value="0"
+                                oninput="setEQ(0, this.value)">
+                        </div>
+
+                        <div
+                            style="display: flex; flex-direction: column; gap: 4px; max-width: 400px; width: 100%; margin-bottom: 12px;">
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); font-family: monospace;">
+                                <span>250 Hz</span>
+                                <span id="eq-250-val">0 dB</span>
+                            </div>
+                            <input type="range" id="eq-250" min="-12" max="12" step="1" value="0"
+                                oninput="setEQ(1, this.value)">
+                        </div>
+
+                        <div
+                            style="display: flex; flex-direction: column; gap: 4px; max-width: 400px; width: 100%; margin-bottom: 12px;">
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); font-family: monospace;">
+                                <span>1 kHz</span>
+                                <span id="eq-1000-val">0 dB</span>
+                            </div>
+                            <input type="range" id="eq-1000" min="-12" max="12" step="1" value="0"
+                                oninput="setEQ(2, this.value)">
+                        </div>
+
+                        <div
+                            style="display: flex; flex-direction: column; gap: 4px; max-width: 400px; width: 100%; margin-bottom: 12px;">
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); font-family: monospace;">
+                                <span>4 kHz</span>
+                                <span id="eq-4000-val">0 dB</span>
+                            </div>
+                            <input type="range" id="eq-4000" min="-12" max="12" step="1" value="0"
+                                oninput="setEQ(3, this.value)">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 4px; max-width: 400px; width: 100%;">
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); font-family: monospace;">
+                                <span>16 kHz</span>
+                                <span id="eq-16000-val">0 dB</span>
+                            </div>
+                            <input type="range" id="eq-16000" min="-12" max="12" step="1" value="0"
+                                oninput="setEQ(4, this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h2>嵌入代码生成器</h2>
+                    <div class="settings-row">
+                        <label>目标歌单 ID</label>
+                        <input type="text" id="embed-target-id" value="3778678">
+                    </div>
+                    <div class="settings-row">
+                        <button class="btn-outline" onclick="generateEmbed()">复制 HTML 代码</button>
+                    </div>
+                    <div class="settings-row">
+                        <textarea class="code-box" id="embed-code" readonly placeholder="生成的代码将显示在这里..."></textarea>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h2>作者信息</h2>
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <img src="https://q.qlogo.cn/headimg_dl?dst_uin=1432777209&spec=640&img_type=jpg" alt="小枫_QWQ"
+                            style="width: 60px; height: 60px; border-radius: 50%; border: 1px solid var(--glass-border); object-fit: cover; background: rgba(255,255,255,0.05); box-shadow: 0 8px 24px rgba(0,0,0,0.4);">
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <span
+                                style="font-size: 18px; font-weight: 700; color: var(--text-main); letter-spacing: 1px;">小枫_QWQ</span>
+                            <a href="https://xiaofengqwq.com" target="_blank" class="btn-outline"
+                                style="text-decoration: none; font-size: 11px; padding: 8px 16px; width: max-content; display: inline-flex; align-items: center; gap: 6px;">
+                                <span>访问个人主页</span>
+                                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                    <path
+                                        d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-card" style="border-bottom:none;">
+                    <h2 style="color: #ff4a4a;">危险区域</h2>
+                    <div class="settings-row">
+                        <label style="color: var(--text-dim); font-size: 13px;">清除本地数据库缓存与偏好设置。</label>
+                        <button class="btn-outline" style="border-color: #ff4a4a; color: #ff4a4a;"
+                            onclick="clearCache()">恢复出厂设置</button>
+                    </div>
                 </div>
             </div>
-        </section>
-    </main>
+        </div>
 
-    <nav class="floating-dock" id="dock" data-position="bottom">
-        <mdui-button-icon href="#home" data-route="home" icon="queue_music" variant="filled"></mdui-button-icon>
-        <mdui-button-icon href="#player" data-route="player" icon="album" variant="text"></mdui-button-icon>
-        <mdui-button-icon href="#settings" data-route="settings" icon="settings" variant="text"></mdui-button-icon>
-    </nav>
-
-    <div class="apple-music-bg">
-        <div id="bg-layer-1" class="am-bg-layer am-bg-layer-1 is-active"></div>
-        <div id="bg-layer-2" class="am-bg-layer am-bg-layer-2"></div>
+        <div class="sidebar">
+            <div class="header">
+                <h1>Flux Audio</h1>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-icon" onclick="scrollToCurrentTrack()" id="locate-btn" title="定位当前播放歌曲"
+                        style="display: none;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                            <path
+                                d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z" />
+                        </svg>
+                    </button>
+                    <button class="btn-icon" onclick="toggleDesktopSettings()" id="desk-setting-btn" data-state="gear"
+                        title="设置偏好">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                            <path
+                                d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="search-box">
+                <input type="text" id="api-id" value="3778678" placeholder="歌单ID / 歌单链接 / 歌名">
+                <button class="btn-text" onclick="fetchPlaylist()">加载</button>
+            </div>
+            <ul class="track-list" id="list-container">
+                <div style="padding: 20px; color: var(--text-dim); font-size: 12px; letter-spacing: 1px;">等待加载数据...
+                </div>
+            </ul>
+        </div>
     </div>
-
-    <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script type="module" src="./src/script.js"></script>
+    <script src="./src/script.js"></script>
 </body>
 
 </html>
