@@ -559,7 +559,6 @@ textarea.code-box {
 
 /* 滑动条样式 */
 input[type="range"] {
-    -webkit-appearance: none;
     width: 100%;
     background: transparent;
     outline: none;
@@ -815,7 +814,6 @@ input[type="range"]::-webkit-slider-thumb:hover {
     #track-name-large {
         font-size: 28px;
         white-space: normal;
-        -webkit-line-clamp: 2;
         display: -webkit-box;
         -webkit-box-orient: vertical;
         text-align: center;
