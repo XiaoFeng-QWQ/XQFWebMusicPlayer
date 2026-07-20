@@ -1,0 +1,29 @@
+:root {
+    --cursor-default: url('/cursors/light/pointer.cur');
+    --cursor-action: url('/cursors/light/link.cur');
+    --cursor-text: url('/cursors/light/beam.cur');
+}
+
+.dark {
+    --cursor-default: url('/cursors/dark/pointer.cur');
+    --cursor-action: url('/cursors/dark/link.cur');
+    --cursor-text: url('/cursors/dark/beam.cur');
+}
+
+
+body {
+    cursor: var(--cursor-default), default;
+}
+
+
+button,
+a,
+.cursor-pointer {
+    cursor: var(--cursor-action), pointer;
+}
+
+
+input,
+textarea {
+    cursor: var(--cursor-text), text;
+}

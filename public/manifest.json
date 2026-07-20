@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/web-manifest.json",
+  "name": "XQF Music Player",
+  "short_name": "XQF Music",
+  "description": "小枫_QWQ 音乐播放器 - 基于 Netease API 的在线音乐播放器",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

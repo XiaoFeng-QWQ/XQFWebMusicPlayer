@@ -1,0 +1,103 @@
+@import "tailwindcss";
+@import "./Cursors.css";
+
+@variant dark (&:is(.dark *));
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+/* 淡入动画 */
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+}
+
+/* 切歌过渡动画 */
+@keyframes song-change {
+    0% { opacity: 0; transform: translateY(6px) scale(0.98); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-song-change {
+    animation: song-change 0.4s ease-out forwards;
+}
+
+/* 频谱跳动动画 */
+@keyframes spectrum-pulse {
+    0%, 100% { transform: scaleY(0.1); }
+    50% { transform: scaleY(0.8); }
+}
+
+/* ========== 页面切换动画 ========== */
+@keyframes slide-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-down {
+    from { opacity: 0; transform: translateY(-24px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-out-up {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-24px); }
+}
+
+@keyframes slide-out-down {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(24px); }
+}
+
+.animate-slide-up {
+    animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-down {
+    animation: slide-down 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-out-up {
+    animation: slide-out-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-out-down {
+    animation: slide-out-down 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes card-flip-left {
+    0% { opacity: 1; transform: rotateZ(-8deg) scale(1); }
+    50% { opacity: 0.5; transform: rotateZ(-12deg) scale(0.98); }
+    100% { opacity: 1; transform: rotateZ(-8deg) scale(1); }
+}
+
+@keyframes card-flip-right {
+    0% { opacity: 1; transform: rotateZ(8deg) scale(1); }
+    50% { opacity: 0.5; transform: rotateZ(12deg) scale(0.98); }
+    100% { opacity: 1; transform: rotateZ(8deg) scale(1); }
+}
+
+.animate-card-flip-left {
+    animation: card-flip-left 0.5s ease-out forwards;
+}
+
+.animate-card-flip-right {
+    animation: card-flip-right 0.5s ease-out forwards;
+}
+
+@keyframes vinyl-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
