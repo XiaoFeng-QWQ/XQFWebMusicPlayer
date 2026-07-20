@@ -47,6 +47,18 @@ export const useTheme = () => {
             });
         });
 
+        // 小屏幕跳过圆形扩散动画，使用默认交叉淡入淡出
+        if (window.innerWidth < 768) {
+            transition.finished.then(() => {
+                document.documentElement.classList.remove('theme-transitioning');
+                isTransitioningRef.current = false;
+            }).catch(() => {
+                document.documentElement.classList.remove('theme-transitioning');
+                isTransitioningRef.current = false;
+            });
+            return;
+        }
+
         transition.ready.then(() => {
             const anim = document.documentElement.animate(
                 {
@@ -79,12 +91,18 @@ export const useTheme = () => {
 
     useEffect(() => {
         const root = document.documentElement;
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        const favicon = document.getElementById('favicon') as HTMLLinkElement | null;
         if (isDark) {
             root.classList.add('dark');
             localStorage.setItem('theme', 'dark');
+            metaThemeColor?.setAttribute('content', '#0b0b0d');
+            if (favicon) favicon.href = '/icon.svg';
         } else {
             root.classList.remove('dark');
             localStorage.setItem('theme', 'light');
+            metaThemeColor?.setAttribute('content', '#fafafa');
+            if (favicon) favicon.href = '/icon-light.svg';
         }
     }, [isDark]);
 

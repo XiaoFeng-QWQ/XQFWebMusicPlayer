@@ -37,8 +37,23 @@ function AppContent() {
     const { canInstall, promptInstall } = useInstallPrompt();
     const accentColor = useAccentColor(musicPlayer.musicInfo.pic);
 
+    const safeLyricColor = useMemo(() => {
+        if (!accentColor) return null;
+        const hex = accentColor.replace('#', '');
+        const r = parseInt(hex.slice(0, 2), 16) / 255;
+        const g = parseInt(hex.slice(2, 4), 16) / 255;
+        const b = parseInt(hex.slice(4, 6), 16) / 255;
+        const srgb = (c: number) => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        const luminance = 0.2126 * srgb(r) + 0.7152 * srgb(g) + 0.0722 * srgb(b);
+        // dark 背景为 #0b0b0d (luminance≈0.0017), light 背景为 #fafafa (luminance≈0.965)
+        const bgLum = isDark ? 0.0017 : 0.965;
+        const contrast = (Math.max(luminance, bgLum) + 0.05) / (Math.min(luminance, bgLum) + 0.05);
+        return contrast >= 4.5 ? accentColor : null;
+    }, [accentColor, isDark]);
+
     const mainRef = useRef<HTMLDivElement>(null);
     const dockRef = useRef<HTMLDivElement>(null);
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches;
 
     const [songScrollTop, setSongScrollTop] = useState(0);
     const [songContainerHeight, setSongContainerHeight] = useState(0);
@@ -111,7 +126,6 @@ function AppContent() {
         onSwipeRight: () => musicPlayer.handlePrevTrack(),
         onSwipeUp: () => musicPlayer.volumeUp(),
         onSwipeDown: () => musicPlayer.volumeDown(),
-        onTap: () => musicPlayer.togglePlay(),
     }), [musicPlayer]));
 
     const handleMouseMove = (e: React.MouseEvent) => {
@@ -450,8 +464,8 @@ function AppContent() {
                                             const isActive = idx === musicPlayer.currentLyricIndex && !musicPlayer.lyricSearch;
                                             return (
                                                 <p key={idx} data-index={idx} onClick={() => musicPlayer.locateLyric(idx)}
-                                                    className={`text-[11px] transition-all duration-300 px-3 leading-relaxed cursor-pointer truncate text-center ${isActive ? (accentColor ? 'font-semibold scale-105' : 'text-neutral-900 dark:text-white font-semibold scale-105') : 'text-neutral-400/50 dark:text-neutral-600/50 hover:text-neutral-600 dark:hover:text-neutral-400'}`}
-                                                    style={{ height: LYRIC_ITEM_HEIGHT, ...(isActive && accentColor ? { color: accentColor } : {}) }} role="listitem" aria-current={isActive ? 'true' : undefined}>
+                                                    className={`text-[11px] transition-all duration-300 px-3 leading-relaxed cursor-pointer truncate text-center ${isActive ? (safeLyricColor ? 'font-semibold scale-105' : 'text-neutral-900 dark:text-white font-semibold scale-105') : 'text-neutral-400/50 dark:text-neutral-600/50 hover:text-neutral-600 dark:hover:text-neutral-400'}`}
+                                                    style={{ height: LYRIC_ITEM_HEIGHT, ...(isActive && safeLyricColor ? { color: safeLyricColor } : {}) }} role="listitem" aria-current={isActive ? 'true' : undefined}>
                                                     {lyric.text}
                                                 </p>
                                             );
@@ -595,8 +609,8 @@ function AppContent() {
                                             const isActive = idx === musicPlayer.currentLyricIndex && !musicPlayer.lyricSearch;
                                             return (
                                                 <p key={idx} data-index={idx} onClick={() => musicPlayer.locateLyric(idx)}
-                                                    className={`text-[11px] transition-all duration-300 px-3 leading-relaxed cursor-pointer truncate text-center ${isActive ? (accentColor ? 'font-semibold scale-105' : 'text-neutral-900 dark:text-white font-semibold scale-105') : 'text-neutral-400/50 dark:text-neutral-600/50 hover:text-neutral-600 dark:hover:text-neutral-400'}`}
-                                                    style={{ height: LYRIC_ITEM_HEIGHT, ...(isActive && accentColor ? { color: accentColor } : {}) }} role="listitem" aria-current={isActive ? 'true' : undefined}>
+                                                    className={`text-[11px] transition-all duration-300 px-3 leading-relaxed cursor-pointer truncate text-center ${isActive ? (safeLyricColor ? 'font-semibold scale-105' : 'text-neutral-900 dark:text-white font-semibold scale-105') : 'text-neutral-400/50 dark:text-neutral-600/50 hover:text-neutral-600 dark:hover:text-neutral-400'}`}
+                                                    style={{ height: LYRIC_ITEM_HEIGHT, ...(isActive && safeLyricColor ? { color: safeLyricColor } : {}) }} role="listitem" aria-current={isActive ? 'true' : undefined}>
                                                     {lyric.text}
                                                 </p>
                                             );
@@ -908,11 +922,13 @@ function AppContent() {
                 </div>
             </footer>
 
+            {!isPWA && (
             <div className={`absolute bottom-0 left-0 right-0 z-10 flex justify-center pb-1 select-none transition-all duration-1000 delay-300 ${isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <p className="text-[9px] sm:text-[10px] text-neutral-400/60 dark:text-neutral-600/60">
                     Powered by 小枫_QWQ | <a href="https://bing.com/search?q=%E5%B0%8F%E6%9E%AB_QWQ" target="_blank" rel="noopener noreferrer" className="hover:text-neutral-600 dark:hover:text-neutral-400 transition-colors focus:outline-none focus:ring-1 focus:ring-neutral-400 rounded" aria-label="关于开发者">AboutDev</a>
                 </p>
             </div>
+            )}
         </div>
     );
 }

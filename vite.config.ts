@@ -13,12 +13,12 @@ export default defineConfig({
       output: {
         assetFileNames: (assetInfo) => {
           if (assetInfo.names?.some(n => n.endsWith('.css'))) {
-            return 'assets/[name]-[hash][extname]';
+            return 'assets/css/[name]-[hash][extname]';
           }
           return 'assets/[name]-[hash][extname]';
         },
-        chunkFileNames: 'assets/[name]-[hash].js',
-        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
         manualChunks(id) {
           if (id.includes('node_modules/music-metadata')) {
             return 'vendor-metadata';
